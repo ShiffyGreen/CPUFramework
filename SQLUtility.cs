@@ -1,5 +1,6 @@
 ﻿using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics;
 
 namespace CPUFramework
 {
@@ -19,5 +20,17 @@ namespace CPUFramework
             dt.Load(dr);
             return dt;
         }
+
+        public static void DebugPrintDataTable(DataTable dt)
+        {
+            foreach(DataRow r in dt.Rows)
+            {
+                foreach(DataColumn c in dt.Columns)
+                {
+                    Debug.Print(c.ColumnName + " = " + r[c.ColumnName].ToString());
+                }
+            }
+        }
     }
 }
+//note
