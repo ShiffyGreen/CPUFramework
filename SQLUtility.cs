@@ -13,12 +13,29 @@ namespace CPUFramework
             SqlConnection conn = new();
             conn.ConnectionString = ConnectionString;
             conn.Open();
+            
             var cmd = new SqlCommand();
             cmd.Connection = conn;
             cmd.CommandText = sqlstatement;
             var dr = cmd.ExecuteReader();
             dt.Load(dr);
+
+            SetAllColumnsAllowNull(dt);
+
             return dt;
+        }
+
+        public static void ExecuteSQL(string sqlstatement)
+        {
+            GetDataTable(sqlstatement);
+        }
+
+        private static void SetAllColumnsAllowNull(DataTable dt)
+        {
+            foreach(DataColumn c in dt.Columns)
+            {
+                c.AllowDBNull = true;
+            }
         }
 
         public static void DebugPrintDataTable(DataTable dt)
