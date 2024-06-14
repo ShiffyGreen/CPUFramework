@@ -36,7 +36,7 @@ namespace CPUFramework
                     SqlDataReader dr = cmd.ExecuteReader();
                     dt.Load(dr);
                 }
-                catch(SqlException ex)
+                catch (SqlException ex)
                 {
                     string msg = ParseConstraintMsg(ex.Message);
                     throw new Exception(msg);
@@ -61,7 +61,7 @@ namespace CPUFramework
             string origmsg = msg;
             string prefix = "ck_";
             string msgend = "";
-            if(msg.Contains(prefix) == false)
+            if (msg.Contains(prefix) == false)
             {
                 if (msg.Contains("u_"))
                 {
@@ -71,6 +71,10 @@ namespace CPUFramework
                 else if (msg.Contains("f_"))
                 {
                     prefix = "f_";
+                }
+                else if (msg.Contains("c_"))
+                {
+                    prefix = "c_";
                 }
             }
             if (msg.Contains(prefix))
@@ -108,6 +112,13 @@ namespace CPUFramework
             return n;
         }
 
+        public static string GetFirstCOlumnFirstRowValueAsString(string sql)
+        {
+            DataTable dt = GetDataTable(sql);
+            sql = dt.Rows[0][0].ToString();
+            return sql.ToString();
+        }
+
         private static void SetAllColumnsAllowNull(DataTable dt)
         {
             foreach (DataColumn c in dt.Columns)
@@ -143,7 +154,7 @@ namespace CPUFramework
                             comma = "";
                         }
                         sb.AppendLine($"{p.ParameterName} = {(p.Value == null ? "null" : p.Value.ToString())}{comma}");
-                        
+
                     }
                     paramnum++;
                 }
