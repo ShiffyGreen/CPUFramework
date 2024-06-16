@@ -22,7 +22,12 @@ namespace CPUFramework
 
             return cmd;
         }
+
         public static DataTable GetDataTable(SqlCommand cmd)
+        {
+            return DoExicuteSQL(cmd,true);
+        }
+        private static DataTable DoExicuteSQL(SqlCommand cmd, bool loadtable)
         {
 
             DataTable dt = new();
@@ -34,12 +39,19 @@ namespace CPUFramework
                 try
                 {
                     SqlDataReader dr = cmd.ExecuteReader();
-                    dt.Load(dr);
+                    if (loadtable == true)
+                    {
+                        dt.Load(dr);
+                    }
                 }
                 catch (SqlException ex)
                 {
                     string msg = ParseConstraintMsg(ex.Message);
                     throw new Exception(msg);
+                }
+                catch (InvalidCastException ex)
+                {
+                    throw new Exception(cmd.CommandText + ": " + ex.Message, ex);
                 }
             }
             SetAllColumnsAllowNull(dt);
@@ -48,12 +60,29 @@ namespace CPUFramework
 
         public static DataTable GetDataTable(string sqlstatement) //- take a SQL statement and return a DataTable
         {
-            return GetDataTable(new SqlCommand(sqlstatement));
+            return DoExicuteSQL(new SqlCommand(sqlstatement),true);
+        }
+        public static void ExecuteSQL(SqlCommand cmd)
+        {
+            DoExicuteSQL(cmd,false);
         }
 
         public static void ExecuteSQL(string sqlstatement)
         {
             GetDataTable(sqlstatement);
+        }
+
+        public static void SetParamValue(SqlCommand cmd, string paramname, object value)
+        {
+            try
+            {
+                cmd.Parameters[paramname].Value = value;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(cmd.CommandText + ": " + ex.Message,ex);
+            }
+
         }
 
         private static string ParseConstraintMsg(string msg)
@@ -92,6 +121,15 @@ namespace CPUFramework
                     msg = msg.Substring(0, pos);
                     msg = msg.Replace("_", " ");
                     msg = msg + msgend;
+
+                    if(prefix == "f_")
+                    {
+                        var words = msg.Split(" ");
+                        if (words.Length > 1)
+                        {
+                            msg = $"Cannot delete {words[0]} because it has related {words[1]} record.";
+                        }
+                    }
                 }
             }
             return msg;
