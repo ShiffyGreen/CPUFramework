@@ -13,7 +13,7 @@ namespace CPUFramework
 {
     public class bizObject : INotifyPropertyChanged
     {
-        string _tablename = ""; string _getspoc = ""; string _updatespoc = ""; string _deletespoc = "";
+        string _typename = "";string _tablename = ""; string _getspoc = ""; string _updatespoc = ""; string _deletespoc = "";
         string _primarykeyname = ""; string _primarykeyparamname = "";
         DataTable _datatable = new();
         List<PropertyInfo> _properties = new();
@@ -23,7 +23,8 @@ namespace CPUFramework
         public bizObject()
         {
             Type t = this.GetType();
-            _tablename = this.GetType().Name;
+            _typename = t.Name;
+            _tablename = _typename;
             if (_tablename.ToLower().StartsWith("biz")) { _tablename = _tablename.Substring(3); }
             _getspoc = _tablename + "Get";
             _updatespoc = _tablename + "Update";
@@ -132,7 +133,16 @@ namespace CPUFramework
             if(prop != null)
             {
                 if(value == DBNull.Value) { value = null; }
-                prop.SetValue(this, value);
+                try
+                {
+                    prop.SetValue(this, value);
+                }
+                catch(Exception ex)
+                {
+                    string msg = $"{_typename}.{prop.Name} is being set to {value?.ToString()} and that is the wrong data type. {ex.Message}";
+                    throw new CPUDevExeption(msg, ex);
+                }
+               
             }
         }
 
